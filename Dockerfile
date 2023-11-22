@@ -16,11 +16,9 @@ RUN poetry install --no-interaction
 
 COPY . .
 
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0" , "--port", "80"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0" , "--port", "8000", "--reload"]
 
 # devcontainer
 FROM base as devcontainer
 
 RUN apt-get install git -y
-
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0" , "--port", "8000", "--reload"]

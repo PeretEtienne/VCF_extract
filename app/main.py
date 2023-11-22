@@ -1,8 +1,9 @@
 import pprint
 from typing import TypedDict
 
-import vcf
 from fastapi import FastAPI
+
+import vcf
 
 app = FastAPI()
 
@@ -22,7 +23,7 @@ def read_root() -> HomeResponse:
 
 @app.get("/vcf")
 def read_vcf():
-    with open("KDM39442_59040_492838_467052_base_sort.vcf") as f:
+    with open("vcf/KDM39442_59040_492838_467052_base_sort.vcf") as f:
         vcf_reader = vcf.Reader(f)
 
         variants = list(vcf_reader)
