@@ -1,0 +1,20 @@
+{
+  "name": "VCF Extract",
+  "dockerComposeFile": ["../docker-compose.yml", "./docker-compose.yml"],
+  "service": "app",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "matangover.mypy"
+      ]
+    }
+  },
+  "workspaceFolder": "/app",
+  "overrideCommand": true,
+  "remoteEnv": {
+    "MYPYPATH": "/app/typings"
+  }
+}

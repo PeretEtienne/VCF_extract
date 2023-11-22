@@ -1,0 +1,14 @@
+services:
+  app:
+    image: vcf_extract
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: devcontainer 
+    ports:
+      - "8000:8000"
+      - "8008:8008"
+    volumes:
+      - .:/app
+    environment:
+      - MYPYPATH="/app/typings"

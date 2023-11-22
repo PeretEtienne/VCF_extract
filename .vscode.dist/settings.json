@@ -1,0 +1,6 @@
+{
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.stubPath": "typings",
+  "mypy.runUsingActiveInterpreter": true
+}

@@ -112,3 +112,12 @@ venv.bak/
 
 # act
 /bin
+
+# devcontainer
+.devcontainer
+
+# vscode
+.vscode
+
+# vcf
+vcf
