@@ -10,3 +10,31 @@ services:
       - "8008:8008"
     volumes:
       - .:/app
+    networks:
+      - elastic
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    ports:
+      - "9200:9200"
+    networks:
+      - elastic
+    environment:
+      - discovery.type=single-node
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 512M
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    ports:
+      - "5601:5601"
+    networks:
+      - elastic
+    depends_on:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge

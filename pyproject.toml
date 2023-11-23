@@ -12,6 +12,8 @@ uvicorn = {extras = ["standard"], version = "^0.23.2"}
 ruff = "^0.1.4"
 mypy = "^1.6.1"
 pyvcf3 = "^1.0.3"
+elasticsearch = {extras = ["async"], version = "^8.11.0"}
+pydantic-settings = "^2.1.0"
 
 
 [build-system]

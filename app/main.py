@@ -1,24 +1,78 @@
 import pprint
-from typing import TypedDict
+import time
 
+from elasticsearch import AsyncElasticsearch, helpers
 from fastapi import FastAPI
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import vcf
 
 app = FastAPI()
 
 
-class HomeResponse(TypedDict):
-    Hello: str
+class Settings(BaseSettings):
+    ELASTICSEARCH_URL: str = Field(default=...)
+    ELASTICSEARCH_USER: str = Field(default=...)
+    ELASTICSEARCH_PASSWORD: str = Field(default=...)
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-@app.get("/")
-def read_root() -> HomeResponse:
-    test = "hey"
-    print(test)
-    uppercased = test.upper()
+settings = Settings()
 
-    return {"Hello": uppercased}
+
+def get_es():
+    return AsyncElasticsearch(
+        settings.ELASTICSEARCH_URL,
+        basic_auth=(settings.ELASTICSEARCH_USER, settings.ELASTICSEARCH_PASSWORD),
+        verify_certs=False,
+    )
+
+
+@app.get(path="/")
+async def read_root():
+    with open("vcf/KDM39442_59040_492838_467052_base_sort.vcf") as f:
+        vcf_reader = vcf.Reader(f)
+        variations = list(vcf_reader)
+
+        es = get_es()
+
+        start = time.time()
+        documents = [
+            {
+                "chrom": v.CHROM,
+                "pos": v.POS,
+                "id": v.ID,
+            }
+            for v in variations
+        ]
+        end_list = time.time() - start
+
+        print("end_list", end_list)
+
+        start = time.time()
+        result = await helpers.async_bulk(es, documents, index="variations")
+        print("end_bulk", time.time() - start)
+
+        print(result)
+        return result
+
+
+@app.get("/search")
+async def get_variations():
+    es = get_es()
+
+    result = await es.search(index="variations", query={"match_all": {}})
+    return result
+
+
+@app.get("/delete")
+async def delete_variations():
+    es = get_es()
+
+    result = await es.delete_by_query(index="variations", query={"match_all": {}})
+    return result
 
 
 @app.get("/vcf")
