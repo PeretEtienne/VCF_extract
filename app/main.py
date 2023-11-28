@@ -1,36 +1,14 @@
 import io
-import logging
 
-from elasticsearch import AsyncElasticsearch, helpers
+from elasticsearch import helpers
 from fastapi import FastAPI, UploadFile
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import ValidationError
 
 import vcf
+from app.core.es import get_es
+from app.schemas.variation import Variation
 
-app = FastAPI()
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
-class Settings(BaseSettings):
-    ELASTICSEARCH_URL: str = Field(default=...)
-    ELASTICSEARCH_USER: str = Field(default=...)
-    ELASTICSEARCH_PASSWORD: str = Field(default=...)
-
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-
-settings = Settings()
-
-
-def get_es():
-    return AsyncElasticsearch(
-        settings.ELASTICSEARCH_URL,
-        basic_auth=(settings.ELASTICSEARCH_USER, settings.ELASTICSEARCH_PASSWORD),
-        verify_certs=False,
-    )
+app = FastAPI(debug=True)
 
 
 @app.post(path="/extract")
@@ -41,14 +19,11 @@ async def extract_variations(file: UploadFile):
 
     es = get_es()
 
-    documents = [
-        {
-            "chrom": v.CHROM,
-            "pos": v.POS,
-            "id": v.ID,
-        }
-        for v in variations
-    ]
+    documents = []
+    try:
+        documents = [Variation(v).model_dump() for v in variations]
+    except ValidationError as e:
+        return {"errors": e.errors()}
 
     result = await helpers.async_bulk(es, documents, index="variations")
 
